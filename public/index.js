@@ -33,6 +33,7 @@ function create() {
                 repeat: 22,
                 setXY: {x: 12, y: i * 100, stepX: 70},
                 setCollideWorldBounds: true,
+                velocityY: 30
             })
         );
     }
@@ -60,6 +61,14 @@ function update() {
         this.laser = null
         lasers -= 1;
     }
+
+    stars.forEach(s => {
+        s.children.iterate(star => {
+            if (star.y > 1000) {
+                star.setY(0);
+            }
+        })
+    })
 }
 
 const moveShip = () => {
