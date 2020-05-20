@@ -17,6 +17,7 @@ var config = {
 }
 
 var game = new Phaser.Game(config)
+var self
 
 function preload() {
     this.load.image('star', 'assets/star16.png')
@@ -28,6 +29,7 @@ function preload() {
 
 var score = 0
 var lives = 3
+var updating = true
 
 function create() {
     stars = []
@@ -43,6 +45,7 @@ function create() {
         )
     }
 
+    self = this
     ship = this.physics.add.sprite(800, 600, 'ship')
     cursors = this.input.keyboard.createCursorKeys()
     scoreText = this.add.text(16, 16, 'score: 0', {
@@ -68,7 +71,7 @@ let lasers = 0
 
 function update() {
     moveShip()
-    if (cursors.space.isDown && lasers === 0) {
+    if (cursors.space.isDown && lasers === 0 && updating) {
         lasers += 1
         this.laser = this.physics.add.sprite(ship.x, ship.y, 'laser')
         laserGroup.add(this.laser)
@@ -94,9 +97,9 @@ function update() {
 
 function moveShip() {
     if (cursors.left.isDown) {
-        ship.setVelocityX(-520)
+        ship.setVelocityX(-320)
     } else if (cursors.right.isDown) {
-        ship.setVelocityX(520)
+        ship.setVelocityX(320)
     } else {
         ship.setVelocityX(0)
     }
@@ -114,29 +117,38 @@ const shootLaser = () => {
 }
 
 function increaseScore() {
-    score = score + 1;
-    scoreText.setText("score: " + score)
+    if (updating) {
+        score = score + 1;
+        scoreText.setText("score: " + score)
+    }
 }
 
 const createEnemy = (physics) => {
-    let enemy = physics.add.sprite(Math.random() * 1920, 50, 'enemy')
-    enemy.setScale(0.3)
-    enemy.setVelocityY(Math.random() * 300)
-    enemy.setVelocityX(Math.random() * 300)
-    enemy.body.setCollideWorldBounds(true)
-    enemy.body.bounce.setTo(0.9, 0.9)
-    physics.add.collider(ship, enemy, () => touchEnemy(enemy,physics), null, this);
-    physics.add.collider(this.laserGroup, enemy, () => destroy(enemy), null);
+    if (updating) {
+        let enemy = physics.add.sprite(Math.random() * 1920, 50, 'enemy')
+        enemy.setScale(0.3)
+        enemy.setVelocityY(Math.random() * 300)
+        enemy.setVelocityX(Math.random() * 300)
+        enemy.body.setCollideWorldBounds(true)
+        enemy.body.bounce.setTo(0.9, 0.9)
+        physics.add.collider(ship, enemy, () => touchEnemy(enemy, physics), null, this);
+        physics.add.collider(this.laserGroup, enemy, () => destroy(enemy), null);
+    }
 }
 
-const touchEnemy = (enemy,physics) => {
-    enemy.disableBody(true,true)
-    lives-=1
+const touchEnemy = (enemy, physics) => {
+    enemy.disableBody(true, true)
+    lives -= 1
 
     livesText.setText("lives: " + lives)
-    if(lives===0) {
-        physics.add.sprite(ship.x,ship.y,'explosion')
-        ship.disableBody(true,true)
+    if (lives === 0) {
+        physics.add.sprite(ship.x, ship.y, 'explosion')
+        ship.disableBody(true, true)
+        updating = false
+        self.add.text(600, 400, `GAME OVER \n your score: ${score}`, {
+            fontSize: '32px',
+            fill: '#fff',
+        })
     }
 }
 
