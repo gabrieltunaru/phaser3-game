@@ -20,12 +20,14 @@ var game = new Phaser.Game(config)
 
 function preload() {
     this.load.image('star', 'assets/star16.png')
+    this.load.image('explosion', 'assets/explosion.png')
     this.load.image('enemy', 'assets/enemy.png')
     this.load.image('ship', 'assets/spaceship.png')
     this.load.image('laser', 'assets/laser.png')
 }
 
 var score = 0
+var lives = 3
 
 function create() {
     stars = []
@@ -47,8 +49,11 @@ function create() {
         fontSize: '32px',
         fill: '#fff',
     })
+    livesText = this.add.text(1350, 16, 'lives: 3', {
+        fontSize: '32px',
+        fill: '#fff',
+    })
     timedEvent = this.time.addEvent({delay: 1000, callback: increaseScore, repeat: -1});
-    console.log(this)
     timedEvent = this.time.addEvent({
         delay: 2000,
         callback: () => createEnemy(this.physics),
@@ -89,17 +94,17 @@ function update() {
 
 function moveShip() {
     if (cursors.left.isDown) {
-        ship.setVelocityX(-160)
+        ship.setVelocityX(-520)
     } else if (cursors.right.isDown) {
-        ship.setVelocityX(160)
+        ship.setVelocityX(520)
     } else {
         ship.setVelocityX(0)
     }
 
     if (cursors.down.isDown) {
-        ship.setVelocityY(160)
+        ship.setVelocityY(320)
     } else if (cursors.up.isDown) {
-        ship.setVelocityY(-160)
+        ship.setVelocityY(-320)
     } else {
         ship.setVelocityY(0)
     }
@@ -114,19 +119,25 @@ function increaseScore() {
 }
 
 const createEnemy = (physics) => {
-    console.log(enemies)
-    console.log(this);
     let enemy = physics.add.sprite(Math.random() * 1920, 50, 'enemy')
     enemy.setScale(0.3)
     enemy.setVelocityY(Math.random() * 300)
     enemy.setVelocityX(Math.random() * 300)
     enemy.body.setCollideWorldBounds(true)
     enemy.body.bounce.setTo(0.9, 0.9)
-    physics.add.collider(ship, enemy, () => touchEnemy(enemy), null);
+    physics.add.collider(ship, enemy, () => touchEnemy(enemy,physics), null, this);
     physics.add.collider(this.laserGroup, enemy, () => destroy(enemy), null);
 }
 
-const touchEnemy = (enemy) => {
+const touchEnemy = (enemy,physics) => {
+    enemy.disableBody(true,true)
+    lives-=1
+
+    livesText.setText("lives: " + lives)
+    if(lives===0) {
+        physics.add.sprite(ship.x,ship.y,'explosion')
+        ship.disableBody(true,true)
+    }
 }
 
 function destroy(enemy) {
