@@ -42,7 +42,6 @@ function create() {
     }
 
     ship = this.physics.add.sprite(800, 600, 'ship')
-    console.log(ship)
     cursors = this.input.keyboard.createCursorKeys()
     scoreText = this.add.text(16, 16, 'score: 0', {
         fontSize: '32px',
@@ -56,7 +55,7 @@ function create() {
         repeat: -1,
         callbackScope: this
     })
-    enemies =this.physics.add.group()
+    enemies = this.physics.add.group()
     laserGroup = this.physics.add.group()
 }
 
@@ -82,7 +81,7 @@ function update() {
     stars.forEach((s) => {
         s.children.iterate((star) => {
             if (star.y > 1000) {
-                star.setY(0)
+                star.setY(Math.random() * 50)
             }
         })
     })
@@ -122,7 +121,7 @@ const createEnemy = (physics) => {
     enemy.setVelocityY(Math.random() * 300)
     enemy.setVelocityX(Math.random() * 300)
     enemy.body.setCollideWorldBounds(true)
-    enemy.body.bounce.setTo(0.9,0.9)
+    enemy.body.bounce.setTo(0.9, 0.9)
     physics.add.collider(ship, enemy, () => touchEnemy(enemy), null);
     physics.add.collider(this.laserGroup, enemy, () => destroy(enemy), null);
 }
@@ -131,7 +130,7 @@ const touchEnemy = (enemy) => {
 }
 
 function destroy(enemy) {
-    enemy.disableBody(true,true)
+    enemy.disableBody(true, true)
     score = score + 10;
     scoreText.setText("score: " + score)
     if (this.laser) {
